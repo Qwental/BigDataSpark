@@ -65,7 +65,12 @@ services:
     env_file:
       - .env
     user: root
-    entrypoint: ["/bin/bash", "/opt/spark/jobs/run.sh"]
+    entrypoint:
+      [
+        "/bin/bash",
+        "-c",
+        "sed -i 's/\\r//' /opt/spark/jobs/run.sh && bash /opt/spark/jobs/run.sh",
+      ]
     depends_on:
       - spark-master
       - spark-worker
