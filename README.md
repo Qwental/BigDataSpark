@@ -120,36 +120,7 @@ SHOW TABLES;
 ```
 
 Ожидаемый вывод — 6 таблиц + 18 вьюх:
-```
-    ┌─name──────────────────────┐
- 1. │ base_customers            │
- 2. │ base_products             │
- 3. │ base_quality              │
- 4. │ base_stores               │
- 5. │ base_suppliers            │
- 6. │ base_time                 │
- 7. │ v_cust_avg_check          │
- 8. │ v_cust_by_country         │
- 9. │ v_cust_top10              │
-10. │ v_prod_avg_stats          │
-11. │ v_prod_rev_by_category    │
-12. │ v_prod_top10              │
-13. │ v_qual_low_rated          │
-14. │ v_qual_most_reviewed      │
-15. │ v_qual_top_rated          │
-16. │ v_store_avg_check         │
-17. │ v_store_by_geo            │
-18. │ v_store_top5              │
-19. │ v_supp_avg_price          │
-20. │ v_supp_by_country         │
-21. │ v_supp_top5               │
-22. │ v_time_avg_order_by_month │
-23. │ v_time_monthly_trends     │
-24. │ v_time_yearly_compare     │
-    └───────────────────────────┘
 
-24 rows in set. Elapsed: 0.005 sec. 
-```
 
 ### 4.2 Количество строк в базовых таблицах
 ```sql
@@ -166,27 +137,27 @@ UNION ALL
 SELECT 'base_quality',   count(*) FROM base_quality;
 ```
 
----
+
 
 ### 4.3 Витрина 1 — Продукты
-Топ-10 самых продаваемых продуктов
+Рейтинг продуктов по количеству продаж
 ```sql
-SELECT * FROM v_prod_top10 LIMIT 10;
+SELECT * FROM v_prod_by_sales LIMIT 10;
 ```
 Выручка по категориям
 ```sql
-SELECT * FROM v_prod_rev_by_category;
+SELECT * FROM v_prod_revenue_by_category;
 ```
-Средний рейтинг и отзывы
-
+Рейтинг и отзывы по продуктам
 ```sql
-SELECT * FROM v_prod_avg_stats LIMIT 10;
+SELECT * FROM v_prod_rating_stats LIMIT 10;
 ```
+
 
 ### 4.4 Витрина 2 — Клиенты
-Топ-10 клиентов по сумме покупок
+Клиенты по общей сумме покупок
 ```sql
-SELECT * FROM v_cust_top10 LIMIT 10;
+SELECT * FROM v_cust_by_total_spent LIMIT 10;
 ```
 Распределение по странам
 ```sql
@@ -197,28 +168,26 @@ SELECT * FROM v_cust_by_country LIMIT 10;
 SELECT * FROM v_cust_avg_check LIMIT 10;
 ```
 
----
 
 ### 4.5 Витрина 3 — Время
 Месячные тренды
 ```sql
 SELECT * FROM v_time_monthly_trends;
 ```
-Годовое сравнение
+Годовые тренды
 ```sql
-SELECT * FROM v_time_yearly_compare;
+SELECT * FROM v_time_yearly_trends;
 ```
 Средний заказ по месяцам
 ```sql
 SELECT * FROM v_time_avg_order_by_month;
 ```
 
----
 
 ### 4.6 Витрина 4 — Магазины
-Топ-5 магазинов по выручке
+Магазины по выручке
 ```sql
-SELECT * FROM v_store_top5 LIMIT 5;
+SELECT * FROM v_store_by_revenue LIMIT 10;
 ```
 Распределение по городам и странам
 ```sql
@@ -229,12 +198,11 @@ SELECT * FROM v_store_by_geo LIMIT 10;
 SELECT * FROM v_store_avg_check LIMIT 10;
 ```
 
----
 
 ### 4.7 Витрина 5 — Поставщики
-Топ-5 поставщиков по выручке
+Поставщики по выручке
 ```sql
-SELECT * FROM v_supp_top5 LIMIT 5;
+SELECT * FROM v_supp_by_revenue LIMIT 10;
 ```
 Средняя цена товаров
 ```sql
@@ -245,23 +213,22 @@ SELECT * FROM v_supp_avg_price LIMIT 10;
 SELECT * FROM v_supp_by_country LIMIT 10;
 ```
 
----
+
 
 ### 4.8 Витрина 6 — Качество
 Продукты с наивысшим рейтингом
 ```sql
-SELECT * FROM v_qual_top_rated LIMIT 5;
+SELECT * FROM v_qual_highest_rated;
 ```
 Продукты с наименьшим рейтингом
 ```sql
-SELECT * FROM v_qual_low_rated LIMIT 5;
+SELECT * FROM v_qual_lowest_rated;
 ```
 Продукты с наибольшим количеством отзывов
 ```sql
-SELECT * FROM v_qual_most_reviewed LIMIT 10;
+SELECT * FROM v_qual_most_reviewed;
 ```
 
----
 
 Выход
 ```sql
