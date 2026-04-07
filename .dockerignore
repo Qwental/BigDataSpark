@@ -1,0 +1,6 @@
+pg_data/
+ch_data/
+mongo_data/
+.git/
+.gitignore
+README.md

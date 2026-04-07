@@ -1,0 +1,13 @@
+pg_data/
+ch_data/
+mongo_data/
+
+spark-logs/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+.idea/
+.vscode/
+*.swp
+*.log

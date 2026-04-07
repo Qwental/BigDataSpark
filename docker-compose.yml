@@ -1,0 +1,83 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION}
+    container_name: PG_sparklab
+    environment:
+      POSTGRES_DB: ${PG_DB}
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    ports:
+      - "${PG_PORT}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./data:/data
+      - ./sql:/docker-entrypoint-initdb.d
+    networks:
+      - br-net
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:${CLICKHOUSE_VERSION}
+    container_name: db_clickhouse
+    environment:
+      - CLICKHOUSE_USER=${CH_USER}
+      - CLICKHOUSE_PASSWORD=${CH_PASSWORD}
+    ports:
+      - "${CH_PORT}:8123"
+      - "9001:9000"
+    volumes:
+      - ch_data:/var/lib/clickhouse
+    networks:
+      - br-net
+
+  spark-master:
+    image: apache/spark:${SPARK_VERSION}
+    container_name: spark-master
+    user: root
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    volumes:
+      - ./spark:/opt/spark/jobs
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    networks:
+      - br-net
+
+  spark-worker:
+    image: apache/spark:${SPARK_VERSION}
+    container_name: spark-worker
+    user: root
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    depends_on:
+      - spark-master
+    volumes:
+      - ./spark:/opt/spark/jobs
+    networks:
+      - br-net
+
+  spark-submit:
+    image: apache/spark:${SPARK_VERSION}
+    container_name: spark-submit
+    volumes:
+      - ./spark:/opt/spark/jobs
+      - ./jars:/opt/spark/custom_jars
+    env_file:
+      - .env
+    user: root
+    entrypoint: ["/bin/bash", "/opt/spark/jobs/run.sh"]
+    depends_on:
+      - spark-master
+      - spark-worker
+      - postgres
+      - clickhouse
+    networks:
+      - br-net
+
+volumes:
+  pg_data:
+  ch_data:
+
+networks:
+  br-net:
+    driver: bridge

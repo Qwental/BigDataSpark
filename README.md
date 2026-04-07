@@ -1,87 +1,269 @@
 # BigDataSpark
 
-Анализ больших данных - лабораторная работа №2 - ETL реализованный с помощью Spark
+### Выполнил Бугренков Владимир М8О-311Б-23
 
-Одним из самых популярных фреймворков для работы с Big Data является Apache Spark. Apache Spark - мощный фреймворк, который предлагает широкий набор функциональности для простого написания ETL-пайплайнов.
+Структура репозитория:
+```text
+~/BigDataSpark> tree -la                                            
+.
+├── .dockerignore
+├── .env # Я специально его запушил, чтобы все норм запускалось =)
+├── .env.example
+├── docker-compose.yml
+├── download_jars.sh
+├── jars
+│   ├── clickhouse-jdbc-0.6.3-all.jar
+│   └── postgresql-42.7.3.jar
+├── README.md
+├── spark
+│   ├── etl.py # etl пайплайн
+│   ├── run.sh # скрипт для запуска спарка
+│   └── spark.log # логи спарка
+└── sql
+    └── init.sql # перенос csv в mock_data_table
 
-Что необходимо сделать? 
-
-Необходимо реализовать ETL-пайплайн с помощью Spark, который трансформирует данные из источника (файлы mock_data.csv с номерами) в модель данных звезда в PostgreSQL, а затем на основе модели данных звезда создать ряд отчетов по данным в одной из NoSQL базах данных обязательно и в нескольких других опционально (будет бонусом). Каждый отчет представляет собой отдельную таблицу в NoSQL БД.
-
-Какие отчеты надо создать?
-1. Витрина продаж по продуктам
-Цель: Анализ выручки, количества продаж и популярности продуктов.
- - Топ-10 самых продаваемых продуктов.
- - Общая выручка по категориям продуктов.
- - Средний рейтинг и количество отзывов для каждого продукта.
-2. Витрина продаж по клиентам
-Цель: Анализ покупательского поведения и сегментация клиентов.
- - Топ-10 клиентов с наибольшей общей суммой покупок.
- - Распределение клиентов по странам.
- - Средний чек для каждого клиента.
-3. Витрина продаж по времени
-Цель: Анализ сезонности и трендов продаж.
- - Месячные и годовые тренды продаж.
- - Сравнение выручки за разные периоды.
- - Средний размер заказа по месяцам.
-4. Витрина продаж по магазинам
-Цель: Анализ эффективности магазинов.
- - Топ-5 магазинов с наибольшей выручкой.
- - Распределение продаж по городам и странам.
- - Средний чек для каждого магазина.
-5. Витрина продаж по поставщикам
-Цель: Анализ эффективности поставщиков.
- - Топ-5 поставщиков с наибольшей выручкой.
- - Средняя цена товаров от каждого поставщика.
- - Распределение продаж по странам поставщиков.
-6. Витрина качества продукции
-Цель: Анализ отзывов и рейтингов товаров.
- - Продукты с наивысшим и наименьшим рейтингом.
- - Корреляция между рейтингом и объемом продаж.
- - Продукты с наибольшим количеством отзывов.
-
-В каких NoSQL БД должны быть эти отчеты:
-1. **Clickhouse** **(обязательно)**
-2. Cassandra (опционально, если будет реализация, то это бонус)
-3. Neo4J (опционально, если будет реализация, то это бонус)
-4. MongoDB (опционально, если будет реализация, то это бонус)
-5. Valkey (опционально, если будет реализация, то это бонус)
-
-![Лабораторная работа №2](https://github.com/user-attachments/assets/2b854382-4c36-4542-a7fb-04fe82a6f6fa)
+```
 
 
-Алгоритм:
+## Инструкция
+### 1. git clone
 
-1. Клонируете к себе этот репозиторий.
-2. Устанавливаете себе инструмент для работы с запросами SQL (рекомендую DBeaver).
-3. Устанавливаете базу данных PostgreSQL (рекомендую установку через docker).
-4. Устанавливаете Apache Spark (рекомендую установку через Docker. Для удобства написания кода на Python можно запустить вместе со JupyterNotebook. Для Java - подключить volume и собрать образ Docker, который будет запускать команду spark-submit с java jar-файлом при старте контейнера, сам jar файл собирается отдельно и кладется в подключенный volume)
-5. Скачиваете файлы с исходными данными mock_data( * ).csv, где ( * ) номера файлов. Всего 10 файлов, каждый по 1000 строк.
-6. Импортируете данные в БД PostgreSQL (например, через механизм импорта csv в DBeaver). Всего в таблице mock_data должно находиться 10000 строк из 10 файлов.
-7. Анализируете исходные данные с помощью запросов.
-8. Выявляете сущности фактов и измерений.
-9. Реализуете приложение на Spark, которое по аналогии с первой лабораторной работой перекладывает исходные данные из PostgreSQL в модель снежинку/звезда в PostgreSQL. (Убедитесь в коннективности Spark и PostgreSQL, настройте сеть между Spark и PostgreSQL, если используете Docker).
-10. Устанавливаете ClickHouse (рекомендую установку через Docker. Убедитесь в коннективности Spark и Clickhouse, настройте сеть между Spark и ClickHouse). **(обязательно)**
-11. Реализуете приложение на Spark, которое создаёт все 6 перечисленных выше отчетов в виде 6 отдельных таблиц в ClickHouse. **(обязательно)**
-12. Устанавливаете Cassandra (рекомендую установку через Docker. Убедитесь в коннективности Spark и Cassandra, настройте сеть между Spark и Cassandra). (опционально)
-13. Реализуете приложение на Spark, которое создаёт все 6 перечисленных выше отчетов в виде 6 отдельных таблиц в Cassandra. (опционально)
-14. Устанавливаете Neo4j (рекомендую установку через Docker. Убедитесь в коннективности Spark и Neo4j, настройте сеть между Spark и Neo4j). (опционально)
-15. Реализуете приложение на Spark, которое создаёт все 6 перечисленных выше отчетов в виде отдельных сущностей в Neo4j. (опционально)
-16. Устанавливаете MongoDB (рекомендую установку через Docker. Убедитесь в коннективности Spark и MongoDB, настройте сеть между Spark и MongoDB). (опционально)
-17. Реализуете приложение на Spark, которое создаёт все 6 перечисленных выше отчетов в виде 6 отдельных коллекций в MongoDB. (опционально)
-18. Устанавливаете Valkey (рекомендую установку через Docker. Убедитесь в коннективности Spark и Valkey, настройте сеть между Spark и Valkey). (опционально)
-19. Реализуете приложение на Spark, которое создаёт все 6 перечисленных выше отчетов в виде отдельных записей в Valkey. (опционально)
-20. Проверяете отчеты в каждой базе данных средствами языка самой БД (ClickHouse - SQL (DBeaver), Cassandra - CQL (DBeaver), Neo4J - Cipher (DBeaver), MongoDB - MQL (Compass), Valkey - redis-cli).
-21. Отправляете работу на проверку лаборантам.
+```bash
+git clone https://github.com/Qwental/BigDataSpark.git
+cd BigDataSpark
+```
 
-Что должно быть результатом работы?
+####  если вдруг что-то не так с jar-файлами их можно скачать
 
-1. Репозиторий, в котором есть исходные данные mock_data().csv, где () номера файлов. Всего 10 файлов, каждый по 1000 строк.
-2. Файл docker-compose.yml с установкой PostgreSQL, Spark, ClickHouse **(обязательно)**, Cassandra (опционально), Neo4j (опционально), MongoDB (опционально), Valkey (опционально) и заполненными данными в PostgreSQL из файлов mock_data(*).csv.
-3. Инструкция, как запускать Spark-джобы для проверки лабораторной работы.
-4. Код Apache Spark трансформации данных из исходной модели в снежинку/звезду в PostgreSQL.
-5. Код Apache Spark трансформации данных из снежинки/звезды в отчеты в ClickHouse.
-6. Код Apache Spark трансформации данных из снежинки/звезды в отчеты в Cassandra.
-7. Код Apache Spark трансформации данных из снежинки/звезды в отчеты в Neo4j.
-8. Код Apache Spark трансформации данных из снежинки/звезды в отчеты в MongoDB.
-9. Код Apache Spark трансформации данных из снежинки/звезды в отчеты в Valkey.
+```bash
+chmod +x download_jars.sh
+./download_jars.sh
+```
+
+### 2. Запуск
+
+```bash
+docker compose up -d
+```
+
+`spark-submit` запускается автоматически
+
+логи спарка:
+```bash
+docker logs -f spark-submit
+```
+
+ждем
+```text 
+...
+ETL completed.
+```
+
+### 3. Проверка PostgreSQL и звезды
+
+```bash
+docker exec -it PG_sparklab psql -U admin -d db_postgres
+```
+
+### 3.1 Список таблиц звезды
+```sql
+\dt star_*
+```
+
+### 3.2 Количество строк
+```sql
+SELECT 'star_fact_sales'    AS tbl, COUNT(*) AS cnt FROM star_fact_sales
+UNION ALL
+SELECT 'star_dim_customer'  AS tbl, COUNT(*) AS cnt FROM star_dim_customer
+UNION ALL
+SELECT 'star_dim_product'   AS tbl, COUNT(*) AS cnt FROM star_dim_product
+UNION ALL
+SELECT 'star_dim_store'     AS tbl, COUNT(*) AS cnt FROM star_dim_store
+UNION ALL
+SELECT 'star_dim_supplier'  AS tbl, COUNT(*) AS cnt FROM star_dim_supplier
+UNION ALL
+SELECT 'star_dim_date'      AS tbl, COUNT(*) AS cnt FROM star_dim_date;
+```
+
+### 3.3 запрос с джоином для проверки связи по ключам
+```sql
+SELECT
+    dc.customer_first_name,
+    dc.customer_last_name,
+    dp.product_name,
+    ds.store_name,
+    f.sale_quantity,
+    f.sale_total_price
+FROM star_fact_sales    f
+JOIN star_dim_customer  dc ON f.customer_id  = dc.customer_id
+JOIN star_dim_product   dp ON f.product_id   = dp.product_id
+JOIN star_dim_store     ds ON f.store_id     = ds.store_id
+LIMIT 10;
+```
+
+Выход из psql:
+```sql
+\q
+```
+
+## 4. Проверка ClickHouse Витрины
+
+```bash
+docker exec -it db_clickhouse clickhouse-client \
+  --user admin \
+  --password password
+```
+
+### 4.1 Список всех таблиц и вьюх
+```sql
+SHOW TABLES;
+```
+
+Ожидаемый вывод — 6 таблиц + 18 вьюх:
+```
+    ┌─name──────────────────────┐
+ 1. │ base_customers            │
+ 2. │ base_products             │
+ 3. │ base_quality              │
+ 4. │ base_stores               │
+ 5. │ base_suppliers            │
+ 6. │ base_time                 │
+ 7. │ v_cust_avg_check          │
+ 8. │ v_cust_by_country         │
+ 9. │ v_cust_top10              │
+10. │ v_prod_avg_stats          │
+11. │ v_prod_rev_by_category    │
+12. │ v_prod_top10              │
+13. │ v_qual_low_rated          │
+14. │ v_qual_most_reviewed      │
+15. │ v_qual_top_rated          │
+16. │ v_store_avg_check         │
+17. │ v_store_by_geo            │
+18. │ v_store_top5              │
+19. │ v_supp_avg_price          │
+20. │ v_supp_by_country         │
+21. │ v_supp_top5               │
+22. │ v_time_avg_order_by_month │
+23. │ v_time_monthly_trends     │
+24. │ v_time_yearly_compare     │
+    └───────────────────────────┘
+
+24 rows in set. Elapsed: 0.005 sec. 
+```
+
+### 4.2 Количество строк в базовых таблицах
+```sql
+SELECT 'base_products'  AS tbl, count(*) AS cnt FROM base_products
+UNION ALL
+SELECT 'base_customers', count(*) FROM base_customers
+UNION ALL
+SELECT 'base_time',      count(*) FROM base_time
+UNION ALL
+SELECT 'base_stores',    count(*) FROM base_stores
+UNION ALL
+SELECT 'base_suppliers', count(*) FROM base_suppliers
+UNION ALL
+SELECT 'base_quality',   count(*) FROM base_quality;
+```
+
+---
+
+### 4.3 Витрина 1 — Продукты
+Топ-10 самых продаваемых продуктов
+```sql
+SELECT * FROM v_prod_top10 LIMIT 10;
+```
+Выручка по категориям
+```sql
+SELECT * FROM v_prod_rev_by_category;
+```
+Средний рейтинг и отзывы
+
+```sql
+SELECT * FROM v_prod_avg_stats LIMIT 10;
+```
+
+### 4.4 Витрина 2 — Клиенты
+Топ-10 клиентов по сумме покупок
+```sql
+SELECT * FROM v_cust_top10 LIMIT 10;
+```
+Распределение по странам
+```sql
+SELECT * FROM v_cust_by_country LIMIT 10;
+```
+Средний чек
+```sql
+SELECT * FROM v_cust_avg_check LIMIT 10;
+```
+
+---
+
+### 4.5 Витрина 3 — Время
+Месячные тренды
+```sql
+SELECT * FROM v_time_monthly_trends;
+```
+Годовое сравнение
+```sql
+SELECT * FROM v_time_yearly_compare;
+```
+Средний заказ по месяцам
+```sql
+SELECT * FROM v_time_avg_order_by_month;
+```
+
+---
+
+### 4.6 Витрина 4 — Магазины
+Топ-5 магазинов по выручке
+```sql
+SELECT * FROM v_store_top5 LIMIT 5;
+```
+Распределение по городам и странам
+```sql
+SELECT * FROM v_store_by_geo LIMIT 10;
+```
+Средний чек по магазинам
+```sql
+SELECT * FROM v_store_avg_check LIMIT 10;
+```
+
+---
+
+### 4.7 Витрина 5 — Поставщики
+Топ-5 поставщиков по выручке
+```sql
+SELECT * FROM v_supp_top5 LIMIT 5;
+```
+Средняя цена товаров
+```sql
+SELECT * FROM v_supp_avg_price LIMIT 10;
+```
+Распределение по странам
+```sql
+SELECT * FROM v_supp_by_country LIMIT 10;
+```
+
+---
+
+### 4.8 Витрина 6 — Качество
+Продукты с наивысшим рейтингом
+```sql
+SELECT * FROM v_qual_top_rated LIMIT 5;
+```
+Продукты с наименьшим рейтингом
+```sql
+SELECT * FROM v_qual_low_rated LIMIT 5;
+```
+Продукты с наибольшим количеством отзывов
+```sql
+SELECT * FROM v_qual_most_reviewed LIMIT 10;
+```
+
+---
+
+Выход
+```sql
+\q
+```
